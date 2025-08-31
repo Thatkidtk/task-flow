@@ -1242,6 +1242,9 @@
                 .forEach(member => {
                     const card = document.createElement('div');
                     card.className = 'member-card';
+                    // Make the entire member card open the member view
+                    card.setAttribute('data-action', 'open-member');
+                    card.setAttribute('data-member-id', member.id);
                     const completed = member.tasks.filter(t => t.completed).length;
                     const initials = (member.name||'').trim().split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('');
                     const color = avatarColor(member.name||'');
