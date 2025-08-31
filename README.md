@@ -36,6 +36,10 @@ A lightweight, installable task manager for teams and families. 100% client‑si
 - Single‑file app kept simple on purpose; no build step required.
 - For a larger setup, split CSS/JS and add a bundler (e.g., Vite) and tests (Playwright/Cypress).
 
+## How This App Can Be Improved
+- See IMPROVEMENTS.md for a curated roadmap:
+  - https://github.com/Thatkidtk/task-flow/blob/main/IMPROVEMENTS.md
+
 ---
 
 Made with ❤️ to keep teams aligned and work flowing.
