@@ -1274,6 +1274,16 @@
                             `).join('')}
                         </div>
                     `;
+                    // Fallback: ensure clicking the name opens member view and task modal even without app.js
+                    const nameEl = card.querySelector('.member-name');
+                    if (nameEl && !nameEl.__bound) {
+                        nameEl.__bound = true;
+                        nameEl.addEventListener('click', function(e){
+                            e.preventDefault();
+                            if (typeof openMemberView === 'function') openMemberView(member.id);
+                            if (typeof openTaskModal === 'function') openTaskModal(member.id);
+                        });
+                    }
                     grid.appendChild(card);
                 });
         }
