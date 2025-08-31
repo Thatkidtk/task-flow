@@ -250,6 +250,8 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #2d3748;
+            cursor: pointer;
+            text-decoration: underline;
         }
 
         .task-item {
@@ -597,6 +599,18 @@
                         </div>
                         <div id="membersGrid" class="member-grid"></div>
                     </div>
+
+                    <div id="memberView" style="display: none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 20px;">
+                            <button class="btn btn-secondary btn-small" data-action="back-to-group" type="button">← Back to Group</button>
+                            <div style="flex:1; text-align:center;">
+                                <h2 id="currentMemberName">Member Name</h2>
+                                <p id="currentMemberRole" style="color:#718096;"></p>
+                            </div>
+                            <button id="memberAddTaskBtn" class="btn btn-small" data-action="open-member-task-modal" type="button">➕ Add Task</button>
+                        </div>
+                        <div id="memberTasksContainer"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -734,6 +748,7 @@
         let currentGroupId = null;
         let currentTaskMemberId = null;
         let currentTaskEditId = null;
+        let currentMemberId = null;
         let activity = [];
 
         // Initialize app
@@ -938,6 +953,8 @@
 
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('groupView').style.display = 'block';
+            const mv = document.getElementById('memberView');
+            if (mv) mv.style.display = 'none';
             
             document.getElementById('currentGroupName').textContent = group.name;
             document.getElementById('currentGroupDescription').textContent = group.description || 'No description';
@@ -950,6 +967,9 @@
             document.querySelectorAll('.group-card').forEach(card => card.classList.remove('active'));
             document.getElementById('dashboardView').style.display = 'block';
             document.getElementById('groupView').style.display = 'none';
+            const mv = document.getElementById('memberView');
+            if (mv) mv.style.display = 'none';
+            currentMemberId = null;
         }
 
         function updateGroup(event) {
@@ -1100,6 +1120,7 @@
             renderMembers();
             renderGroups();
             updateDashboard();
+            if (currentMemberId) renderMemberTasks();
             closeModal('taskModal');
             showNotification(currentTaskEditId ? 'Task updated!' : 'Task added successfully!');
             logActivity('task:' + (currentTaskEditId ? 'update' : 'create'), `${currentTaskEditId ? 'Updated' : 'Added'} task: ${title}`);
@@ -1126,6 +1147,7 @@
             renderMembers();
             renderGroups();
             updateDashboard();
+            if (currentMemberId === memberId) renderMemberTasks();
         }
 
         function deleteTask(memberId, taskId) {
@@ -1141,6 +1163,7 @@
             updateDashboard();
             showNotification('Task deleted');
             logActivity('task:delete', 'Deleted a task');
+            if (currentMemberId === memberId) renderMemberTasks();
         }
 
         // Rendering
@@ -1226,11 +1249,7 @@
                         <div class="member-header">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div class="member-avatar" style="background:${color}">${initials||'?'}</div>
-                                <div class="member-name">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
-                            </div>
-                            <div style="display:flex; gap:8px;">
-                                <button class="btn btn-small" data-action="add-task" data-member-id="${escapeAttr(member.id)}">➕ Task</button>
-                                <button class="btn btn-small btn-danger" data-action="remove-member" data-member-id="${escapeAttr(member.id)}">🗑️ Remove</button>
+                                <div class="member-name" data-action="open-member" data-member-id="${escapeAttr(member.id)}">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
                             </div>
                         </div>
                         <div class="task-list">
@@ -1254,6 +1273,69 @@
                     `;
                     grid.appendChild(card);
                 });
+        }
+
+        // Member detail view
+        function openMemberView(memberId) {
+            const group = groups.find(g => g.id === currentGroupId);
+            if (!group) return;
+            const member = group.members.find(m => m.id === memberId);
+            if (!member) return;
+
+            currentMemberId = memberId;
+            const dv = document.getElementById('dashboardView');
+            const gv = document.getElementById('groupView');
+            const mv = document.getElementById('memberView');
+            if (dv) dv.style.display = 'none';
+            if (gv) gv.style.display = 'none';
+            if (mv) mv.style.display = 'block';
+
+            const nameEl = document.getElementById('currentMemberName');
+            const roleEl = document.getElementById('currentMemberRole');
+            const addBtn = document.getElementById('memberAddTaskBtn');
+            if (nameEl) nameEl.textContent = member.name || 'Member';
+            if (roleEl) roleEl.textContent = member.role ? member.role : '';
+            if (addBtn) addBtn.setAttribute('data-member-id', memberId);
+
+            renderMemberTasks();
+        }
+
+        function backToGroupView() {
+            currentMemberId = null;
+            const mv = document.getElementById('memberView');
+            if (mv) mv.style.display = 'none';
+            const gv = document.getElementById('groupView');
+            if (gv) gv.style.display = 'block';
+        }
+
+        function renderMemberTasks() {
+            const container = document.getElementById('memberTasksContainer');
+            if (!container) return;
+            const gIdx = groups.findIndex(g => g.id === currentGroupId);
+            if (gIdx === -1) { container.innerHTML = ''; return; }
+            const member = groups[gIdx].members.find(m => m.id === currentMemberId);
+            if (!member) { container.innerHTML = '<div style="color:#718096;">Member not found.</div>'; return; }
+            const tasks = applyTaskFilters(member.tasks);
+            if (!tasks.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No tasks yet</h3><p>Use "Add Task" to create one.</p></div>';
+                return;
+            }
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item ${task.completed ? 'completed' : ''} ${task.priority ? task.priority+'-priority' : ''} ${isOverdue(task) ? 'overdue' : ''}">
+                    <div class="task-content">
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        <div class="task-meta">
+                            ${task.priority ? 'Priority: ' + escapeHtml(task.priority) : ''}
+                            ${task.dueDate ? ' • Due: ' + formatDate(task.dueDate) : ''}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-small" data-action="edit-task" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}">✏️ Edit</button>
+                        <button class="btn btn-small btn-secondary" data-action="toggle-task" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
+                        <button class="btn btn-small btn-danger" data-action="delete-task" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function updateDashboard() {

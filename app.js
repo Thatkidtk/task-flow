@@ -18,6 +18,15 @@
       if (action === 'show-login' && typeof window.showLogin === 'function') return window.showLogin();
       if (action === 'clear-activity' && typeof window.clearActivity === 'function') return window.clearActivity();
       if (action === 'delete-group' && typeof window.deleteGroup === 'function') return window.deleteGroup();
+      if (action === 'open-member' && el.dataset.memberId && typeof window.openMemberView === 'function') return window.openMemberView(el.dataset.memberId);
+      if (action === 'back-to-group' && typeof window.backToGroupView === 'function') return window.backToGroupView();
+      if (action === 'open-member-task-modal') {
+        var mid = el.dataset.memberId || (typeof window.currentMemberId !== 'undefined' ? window.currentMemberId : null);
+        if (mid && typeof window.openTaskModal === 'function') return window.openTaskModal(mid);
+      }
+      if (action === 'edit-task' && typeof window.editTask === 'function') return window.editTask(el.dataset.memberId, el.dataset.taskId);
+      if (action === 'toggle-task' && typeof window.toggleTask === 'function') return window.toggleTask(el.dataset.memberId, el.dataset.taskId);
+      if (action === 'delete-task' && typeof window.deleteTask === 'function') return window.deleteTask(el.dataset.memberId, el.dataset.taskId);
       if (action === 'edit-group') {
         var name = el.dataset.groupName || '';
         var desc = el.dataset.groupDescription || '';
