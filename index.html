@@ -1237,8 +1237,8 @@
                                 <div class="member-name">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
                             </div>
                             <div style="display:flex; gap:8px;">
-                                <button class="btn btn-small" onclick="openTaskModal(${member.id});">➕ Task</button>
-                                <button class="btn btn-small btn-danger" onclick="removeMember(${member.id});">🗑️ Remove</button>
+                                <button class="btn btn-small" onclick="openTaskModal(${JSON.stringify(member.id)});">➕ Task</button>
+                                <button class="btn btn-small btn-danger" onclick="removeMember(${JSON.stringify(member.id)});">🗑️ Remove</button>
                             </div>
                         </div>
                         <div class="task-list">
@@ -1252,9 +1252,9 @@
                                         </div>
                                     </div>
                                     <div class="task-actions">
-                                        <button class="btn btn-small" onclick="editTask(${member.id}, ${task.id})">✏️ Edit</button>
-                                        <button class="btn btn-small btn-secondary" onclick="toggleTask(${member.id}, ${task.id})">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
-                                        <button class="btn btn-small btn-danger" onclick="deleteTask(${member.id}, ${task.id})">🗑️</button>
+                                        <button class="btn btn-small" onclick="editTask(${JSON.stringify(member.id)}, ${JSON.stringify(task.id)})">✏️ Edit</button>
+                                        <button class="btn btn-small btn-secondary" onclick="toggleTask(${JSON.stringify(member.id)}, ${JSON.stringify(task.id)})">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
+                                        <button class="btn btn-small btn-danger" onclick="deleteTask(${JSON.stringify(member.id)}, ${JSON.stringify(task.id)})">🗑️</button>
                                     </div>
                                 </div>
                             `).join('')}
