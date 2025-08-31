@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#4facfe">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
     <meta name="description" content="TaskFlow helps teams and families organize tasks, groups, and schedules — all stored locally on your device.">
     <meta name="robots" content="index,follow">
     <meta property="og:title" content="TaskFlow — Team & Family Task Manager">
@@ -17,17 +18,7 @@
     <meta name="twitter:title" content="TaskFlow — Team & Family Task Manager">
     <meta name="twitter:description" content="Organize groups, assign tasks, and track progress. Data stays on your device.">
     <meta name="twitter:image" content="icon.svg">
-    <style>
-        /* additions */
-        .filter-input { padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-        .task-item.overdue { border-left: 4px solid #e53e3e; background: #fff5f5; }
-        .member-avatar { width: 36px; height: 36px; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:700; letter-spacing:0.5px; }
-        .activity-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; }
-        .activity-item { display:flex; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #edf2f7; }
-        .activity-item:last-child { border-bottom:none; }
-        .activity-time { color:#718096; font-size:12px; white-space:nowrap; }
-        .site-footer { max-width:1400px; margin:20px auto; padding:12px 16px; color:#4a5568; font-size:12px; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; }
-    </style>
+    
     <style>
         * {
             margin: 0;
@@ -461,10 +452,10 @@
                     <label>Password</label>
                     <input type="password" id="loginPassword" placeholder="Enter your password">
                 </div>
-                <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="login()">Sign In</button>
+                <button class="btn" style="width: 100%; margin-bottom: 15px;" data-action="login">Sign In</button>
                 <p style="text-align: center; color: #718096;">
                     Don't have an account? 
-                    <a href="#" onclick="showRegister()" style="color: #667eea;">Sign up</a>
+                    <a href="#" data-action="show-register" style="color: #667eea;">Sign up</a>
                 </p>
             </div>
 
@@ -482,10 +473,10 @@
                     <label>Password</label>
                     <input type="password" id="registerPassword" placeholder="Create a password">
                 </div>
-                <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="register()">Create Account</button>
+                <button class="btn" style="width: 100%; margin-bottom: 15px;" data-action="register">Create Account</button>
                 <p style="text-align: center; color: #718096;">
                     Already have an account? 
-                    <a href="#" onclick="showLogin()" style="color: #667eea;">Sign in</a>
+                    <a href="#" data-action="show-login" style="color: #667eea;">Sign in</a>
                 </p>
             </div>
         </div>
@@ -508,7 +499,7 @@
                     <button class="btn btn-secondary" id="exportBtn" type="button">⬇️ Export</button>
                     <label class="btn btn-secondary" for="importInput" style="cursor:pointer;">⬆️ Import</label>
                     <input type="file" id="importInput" accept="application/json" style="display:none;">
-                    <button class="btn btn-secondary" onclick="logout()" type="button">🚪 Logout</button>
+                    <button class="btn btn-secondary" data-action="logout" type="button">🚪 Logout</button>
                 </div>
             </div>
 
@@ -516,7 +507,7 @@
                 <div class="sidebar">
                     <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
                         <h3 style="color: #2d3748;">My Groups</h3>
-                        <button class="btn btn-small" onclick="openModal('groupModal')" style="margin-left: auto;">
+                        <button class="btn btn-small" data-action="open-modal" data-target="groupModal" style="margin-left: auto;">
                             ➕ New Group
                         </button>
                     </div>
@@ -550,7 +541,7 @@
                         <div class="activity-card" style="margin-top: 10px;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
                                 <h3 style="color:#2d3748;">Recent Activity</h3>
-                                <button class="btn btn-small btn-secondary" type="button" onclick="clearActivity()">Clear</button>
+                                <button class="btn btn-small btn-secondary" type="button" data-action="clear-activity">Clear</button>
                             </div>
                             <div id="activityFeed">
                                 <div style="color:#718096;">No recent activity yet.</div>
@@ -561,7 +552,7 @@
                             <div class="empty-state-icon">👥</div>
                             <h3>Welcome to TaskFlow!</h3>
                             <p>Create your first group to start managing tasks for your team or family.</p>
-                            <button class="btn" onclick="openModal('groupModal')" style="margin-top: 20px;">
+                            <button class="btn" data-action="open-modal" data-target="groupModal" style="margin-top: 20px;">
                                 ➕ Create Your First Group
                             </button>
                         </div>
@@ -574,10 +565,10 @@
                                 <p id="currentGroupDescription" style="color: #718096;">Group description</p>
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button class="btn btn-secondary btn-small" onclick="openModal('memberModal')">
+                                <button class="btn btn-secondary btn-small" data-action="open-modal" data-target="memberModal">
                                     👤 Add Member
                                 </button>
-                                <button class="btn btn-small" onclick="openModal('editGroupModal')">
+                                <button class="btn btn-small" data-action="open-modal" data-target="editGroupModal">
                                     ✏️ Edit Group
                                 </button>
                             </div>
@@ -617,9 +608,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="groupModalTitle" class="modal-title">Create New Group</h3>
-                <button class="close-btn" onclick="closeModal('groupModal')">&times;</button>
+                <button class="close-btn" data-action="close-modal" data-target="groupModal">&times;</button>
             </div>
-            <form onsubmit="createGroup(event)">
+            <form id="createGroupForm">
                 <div class="input-group">
                     <label>Group Name</label>
                     <input type="text" id="groupName" required placeholder="e.g., Family Tasks, Marketing Team">
@@ -629,7 +620,7 @@
                     <textarea id="groupDescription" rows="3" placeholder="Brief description of this group"></textarea>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('groupModal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-action="close-modal" data-target="groupModal">Cancel</button>
                     <button type="submit" class="btn">Create Group</button>
                 </div>
             </form>
@@ -641,9 +632,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="editGroupModalTitle" class="modal-title">Edit Group</h3>
-                <button class="close-btn" onclick="closeModal('editGroupModal')">&times;</button>
+                <button class="close-btn" data-action="close-modal" data-target="editGroupModal">&times;</button>
             </div>
-            <form onsubmit="updateGroup(event)">
+            <form id="editGroupForm">
                 <div class="input-group">
                     <label>Group Name</label>
                     <input type="text" id="editGroupName" required>
@@ -653,9 +644,9 @@
                     <textarea id="editGroupDescription" rows="3"></textarea>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
-                    <button type="button" class="btn btn-danger" onclick="deleteGroup()">Delete Group</button>
+                    <button type="button" class="btn btn-danger" data-action="delete-group">Delete Group</button>
                     <div style="display: flex; gap: 10px;">
-                        <button type="button" class="btn btn-secondary" onclick="closeModal('editGroupModal')">Cancel</button>
+                        <button type="button" class="btn btn-secondary" data-action="close-modal" data-target="editGroupModal">Cancel</button>
                         <button type="submit" class="btn">Update Group</button>
                     </div>
                 </div>
@@ -668,9 +659,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="memberModalTitle" class="modal-title">Add New Member</h3>
-                <button class="close-btn" onclick="closeModal('memberModal')">&times;</button>
+                <button class="close-btn" data-action="close-modal" data-target="memberModal">&times;</button>
             </div>
-            <form onsubmit="addMember(event)">
+            <form id="addMemberForm">
                 <div class="input-group">
                     <label>Member Name</label>
                     <input type="text" id="memberName" required placeholder="Enter member name">
@@ -684,7 +675,7 @@
                     <input type="email" id="memberEmail" placeholder="member@example.com">
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-action="close-modal" data-target="memberModal">Cancel</button>
                     <button type="submit" class="btn">Add Member</button>
                 </div>
             </form>
@@ -696,9 +687,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="taskModalTitle" class="modal-title">Add New Task</h3>
-                <button class="close-btn" onclick="closeModal('taskModal')">&times;</button>
+                <button class="close-btn" data-action="close-modal" data-target="taskModal">&times;</button>
             </div>
-            <form onsubmit="addTask(event)">
+            <form id="taskForm">
                 <div class="input-group">
                     <label>Task Title</label>
                     <input type="text" id="taskTitle" required placeholder="Enter task title">
@@ -720,7 +711,7 @@
                     <input type="datetime-local" id="taskDueDate">
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-action="close-modal" data-target="taskModal">Cancel</button>
                     <button type="submit" class="btn">Add Task</button>
                 </div>
             </form>
@@ -735,6 +726,7 @@
         <p><strong>Privacy & Data:</strong> TaskFlow stores your data locally in your browser (localStorage). No servers or analytics used. You can export or clear your data at any time.</p>
     </footer>
 
+    <script src="app.js" defer></script>
     <script>
         // Application State
         let currentUser = null;
@@ -1170,7 +1162,7 @@
                     card.innerHTML = `
                         <div class="group-header">
                             <div class="group-title">${escapeHtml(group.name)}</div>
-                            <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); openModal('editGroupModal'); document.getElementById('editGroupName').value='${escapeAttr(group.name)}'; document.getElementById('editGroupDescription').value='${escapeAttr(group.description||'')}'">Edit</button>
+                            <button class="btn btn-small btn-secondary" data-action="edit-group" data-group-name="${escapeAttr(group.name)}" data-group-description="${escapeAttr(group.description||'')}">Edit</button>
                         </div>
                         <div class="group-stats">
                             <span>👥 ${group.members.length} members</span>
@@ -1237,8 +1229,8 @@
                                 <div class="member-name">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
                             </div>
                             <div style="display:flex; gap:8px;">
-                                <button class="btn btn-small" data-member-id="${escapeAttr(member.id)}" onclick="openTaskModal(this.dataset.memberId)">➕ Task</button>
-                                <button class="btn btn-small btn-danger" data-member-id="${escapeAttr(member.id)}" onclick="removeMember(this.dataset.memberId)">🗑️ Remove</button>
+                                <button class="btn btn-small" data-action="add-task" data-member-id="${escapeAttr(member.id)}">➕ Task</button>
+                                <button class="btn btn-small btn-danger" data-action="remove-member" data-member-id="${escapeAttr(member.id)}">🗑️ Remove</button>
                             </div>
                         </div>
                         <div class="task-list">
@@ -1252,9 +1244,9 @@
                                         </div>
                                     </div>
                                     <div class="task-actions">
-                                        <button class="btn btn-small" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}" onclick="editTask(this.dataset.memberId, this.dataset.taskId)">✏️ Edit</button>
-                                        <button class="btn btn-small btn-secondary" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}" onclick="toggleTask(this.dataset.memberId, this.dataset.taskId)">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
-                                        <button class="btn btn-small btn-danger" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}" onclick="deleteTask(this.dataset.memberId, this.dataset.taskId)">🗑️</button>
+                                        <button class="btn btn-small" data-action="edit-task" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}">✏️ Edit</button>
+                                        <button class="btn btn-small btn-secondary" data-action="toggle-task" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
+                                        <button class="btn btn-small btn-danger" data-action="delete-task" data-member-id="${escapeAttr(member.id)}" data-task-id="${escapeAttr(task.id)}">🗑️</button>
                                     </div>
                                 </div>
                             `).join('')}
