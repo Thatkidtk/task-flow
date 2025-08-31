@@ -1,7 +1,7 @@
 {
   "name": "TaskFlow",
   "short_name": "TaskFlow",
-  "start_url": "./team-task-manager.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4facfe",

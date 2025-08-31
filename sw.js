@@ -1,6 +1,6 @@
 const CACHE = 'taskflow-cache-v1';
 const ASSETS = [
-  './team-task-manager.html',
+  './index.html',
   './manifest.json',
   './icon.svg'
 ];
@@ -25,4 +25,3 @@ self.addEventListener('fetch', (e) => {
     }).catch(() => cached))
   );
 });
-
