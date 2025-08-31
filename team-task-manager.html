@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Team & Family Task Manager</title>
+    <meta name="theme-color" content="#4facfe">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <style>
+        /* additions */
+        .filter-input { padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+        .task-item.overdue { border-left: 4px solid #e53e3e; background: #fff5f5; }
+        .member-avatar { width: 36px; height: 36px; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:700; letter-spacing:0.5px; }
+        .activity-card { background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+        .activity-item { display:flex; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #edf2f7; }
+        .activity-item:last-child { border-bottom:none; }
+        .activity-time { color:#718096; font-size:12px; white-space:nowrap; }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .auth-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            margin: 0 auto 30px;
+        }
+
+        .main-app {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .app-content {
+            display: flex;
+            min-height: 70vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            padding: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .group-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .group-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+        }
+
+        .group-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .group-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .group-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .member-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .member-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .member-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .task-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            border-color: #cbd5e0;
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+            background: #f0fff4;
+        }
+
+        .task-item.high-priority {
+            border-left: 4px solid #e53e3e;
+        }
+
+        .task-item.medium-priority {
+            border-left: 4px solid #dd6b20;
+        }
+
+        .task-item.low-priority {
+            border-left: 4px solid #38a169;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .task-meta {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            padding: 5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .app-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .member-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TaskFlow</h1>
+            <p>Organize teams, manage tasks, achieve goals together</p>
+        </div>
+
+        <!-- Authentication Section -->
+        <div id="authSection" class="auth-section">
+            <div id="loginForm">
+                <h2 style="margin-bottom: 20px; text-align: center; color: #2d3748;">Welcome Back</h2>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="login()">Sign In</button>
+                <p style="text-align: center; color: #718096;">
+                    Don't have an account? 
+                    <a href="#" onclick="showRegister()" style="color: #667eea;">Sign up</a>
+                </p>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <h2 style="margin-bottom: 20px; text-align: center; color: #2d3748;">Create Account</h2>
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="registerName" placeholder="Enter your full name">
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" placeholder="Enter your email">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" placeholder="Create a password">
+                </div>
+                <button class="btn" style="width: 100%; margin-bottom: 15px;" onclick="register()">Create Account</button>
+                <p style="text-align: center; color: #718096;">
+                    Already have an account? 
+                    <a href="#" onclick="showLogin()" style="color: #667eea;">Sign in</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="mainApp" class="main-app">
+            <div class="app-header">
+                <div class="user-info">
+                    <div class="avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName" style="font-weight: 600;">User Name</div>
+                        <div style="opacity: 0.8; font-size: 0.9rem;">Task Manager</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn btn-secondary" id="exportBtn" type="button">⬇️ Export</button>
+                    <label class="btn btn-secondary" for="importInput" style="cursor:pointer;">⬆️ Import</label>
+                    <input type="file" id="importInput" accept="application/json" style="display:none;">
+                    <button class="btn btn-secondary" onclick="logout()" type="button">🚪 Logout</button>
+                </div>
+            </div>
+
+            <div class="app-content">
+                <div class="sidebar">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: #2d3748;">My Groups</h3>
+                        <button class="btn btn-small" onclick="openModal('groupModal')" style="margin-left: auto;">
+                            ➕ New Group
+                        </button>
+                    </div>
+                    <div id="groupsList"></div>
+                </div>
+
+                <div class="main-content">
+                    <div id="dashboardView">
+                        <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="totalGroups">0</div>
+                                    <div class="stat-label">Groups</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="totalMembers">0</div>
+                                    <div class="stat-label">Members</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="totalTasks">0</div>
+                                    <div class="stat-label">Tasks</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="completedTasks">0</div>
+                                    <div class="stat-label">Completed</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="overdueTasks">0</div>
+                                    <div class="stat-label">Overdue</div>
+                                </div>
+                            </div>
+                        <div class="activity-card" style="margin-top: 10px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                                <h3 style="color:#2d3748;">Recent Activity</h3>
+                                <button class="btn btn-small btn-secondary" type="button" onclick="clearActivity()">Clear</button>
+                            </div>
+                            <div id="activityFeed">
+                                <div style="color:#718096;">No recent activity yet.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>Welcome to TaskFlow!</h3>
+                            <p>Create your first group to start managing tasks for your team or family.</p>
+                            <button class="btn" onclick="openModal('groupModal')" style="margin-top: 20px;">
+                                ➕ Create Your First Group
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="groupView" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                            <div>
+                                <h2 id="currentGroupName">Group Name</h2>
+                                <p id="currentGroupDescription" style="color: #718096;">Group description</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-secondary btn-small" onclick="openModal('memberModal')">
+                                    👤 Add Member
+                                </button>
+                                <button class="btn btn-small" onclick="openModal('editGroupModal')">
+                                    ✏️ Edit Group
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+                            <input id="taskSearch" class="filter-input" placeholder="Search tasks..." aria-label="Search tasks">
+                            <select id="taskFilterStatus" class="filter-input" aria-label="Filter by status">
+                                <option value="all">All</option>
+                                <option value="open">Open</option>
+                                <option value="completed">Completed</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                            <select id="taskFilterPriority" class="filter-input" aria-label="Filter by priority">
+                                <option value="all">Any Priority</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                            <select id="taskSort" class="filter-input" aria-label="Sort tasks">
+                                <option value="created_desc">Newest</option>
+                                <option value="due_asc">Due date (soonest)</option>
+                                <option value="priority_desc">Priority (high→low)</option>
+                            </select>
+                            <button id="clearCompletedBtn" class="btn btn-small btn-secondary" type="button">Clear Completed</button>
+                        </div>
+                        <div id="membersGrid" class="member-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Group Modal -->
+    <div id="groupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="groupModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="groupModalTitle" class="modal-title">Create New Group</h3>
+                <button class="close-btn" onclick="closeModal('groupModal')">&times;</button>
+            </div>
+            <form onsubmit="createGroup(event)">
+                <div class="input-group">
+                    <label>Group Name</label>
+                    <input type="text" id="groupName" required placeholder="e.g., Family Tasks, Marketing Team">
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="groupDescription" rows="3" placeholder="Brief description of this group"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('groupModal')">Cancel</button>
+                    <button type="submit" class="btn">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Group Modal -->
+    <div id="editGroupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="editGroupModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="editGroupModalTitle" class="modal-title">Edit Group</h3>
+                <button class="close-btn" onclick="closeModal('editGroupModal')">&times;</button>
+            </div>
+            <form onsubmit="updateGroup(event)">
+                <div class="input-group">
+                    <label>Group Name</label>
+                    <input type="text" id="editGroupName" required>
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="editGroupDescription" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                    <button type="button" class="btn btn-danger" onclick="deleteGroup()">Delete Group</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('editGroupModal')">Cancel</button>
+                        <button type="submit" class="btn">Update Group</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div id="memberModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="memberModalTitle" class="modal-title">Add New Member</h3>
+                <button class="close-btn" onclick="closeModal('memberModal')">&times;</button>
+            </div>
+            <form onsubmit="addMember(event)">
+                <div class="input-group">
+                    <label>Member Name</label>
+                    <input type="text" id="memberName" required placeholder="Enter member name">
+                </div>
+                <div class="input-group">
+                    <label>Role</label>
+                    <input type="text" id="memberRole" placeholder="e.g., Developer, Parent, Student">
+                </div>
+                <div class="input-group">
+                    <label>Email (Optional)</label>
+                    <input type="email" id="memberEmail" placeholder="member@example.com">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="taskModalTitle" class="modal-title">Add New Task</h3>
+                <button class="close-btn" onclick="closeModal('taskModal')">&times;</button>
+            </div>
+            <form onsubmit="addTask(event)">
+                <div class="input-group">
+                    <label>Task Title</label>
+                    <input type="text" id="taskTitle" required placeholder="Enter task title">
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Task description (optional)"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Priority</label>
+                    <select id="taskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Due Date (Optional)</label>
+                    <input type="datetime-local" id="taskDueDate">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
+                    <button type="submit" class="btn">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification" role="status" aria-live="polite"></div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let groups = [];
+        let currentGroupId = null;
+        let currentTaskMemberId = null;
+        let currentTaskEditId = null;
+        let activity = [];
+
+        // Initialize app
+        function init() {
+            loadUserData();
+            if (currentUser) {
+                showMainApp();
+            }
+        }
+
+        // Authentication Functions
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function register() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!name || !email || !password) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+
+            // In a real app, this would be an API call
+            const users = JSON.parse(localStorage.getItem('taskflow_users') || '[]');
+            
+            if (users.find(u => u.email === email)) {
+                showNotification('User with this email already exists', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: genId(),
+                name,
+                email,
+                password, // In production, this would be hashed
+                createdAt: new Date().toISOString()
+            };
+
+            users.push(newUser);
+            localStorage.setItem('taskflow_users', JSON.stringify(users));
+            
+            currentUser = newUser;
+            localStorage.setItem('taskflow_current_user', JSON.stringify(currentUser));
+            
+            showNotification('Account created successfully!');
+            showMainApp();
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showNotification('Please enter email and password', 'error');
+                return;
+            }
+
+            // In a real app, this would be an API call
+            const users = JSON.parse(localStorage.getItem('taskflow_users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                showNotification('Invalid email or password', 'error');
+                return;
+            }
+
+            currentUser = user;
+            localStorage.setItem('taskflow_current_user', JSON.stringify(currentUser));
+            
+            showNotification('Welcome back!');
+            showMainApp();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('taskflow_current_user');
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('mainApp').style.display = 'none';
+            showNotification('Logged out successfully');
+        }
+
+        function showMainApp() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            
+            // Set user info
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            
+            loadGroups();
+            renderGroups();
+            updateDashboard();
+            renderActivity();
+        }
+
+        // Data Management Functions
+        function loadUserData() {
+            const userData = localStorage.getItem('taskflow_current_user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+            }
+            if (currentUser) loadActivity();
+        }
+
+        function loadGroups() {
+            if (!currentUser) return;
+            const allGroups = JSON.parse(localStorage.getItem('taskflow_groups') || '[]');
+            groups = allGroups.filter(g => g.userId === currentUser.id);
+        }
+
+        function saveGroups() {
+            const allGroups = JSON.parse(localStorage.getItem('taskflow_groups') || '[]');
+            const otherGroups = allGroups.filter(g => g.userId !== currentUser.id);
+            const updatedGroups = [...otherGroups, ...groups];
+            localStorage.setItem('taskflow_groups', JSON.stringify(updatedGroups));
+        }
+
+        // Activity Log
+        function loadActivity() {
+            activity = JSON.parse(localStorage.getItem('taskflow_activity_'+currentUser.id) || '[]');
+        }
+        function saveActivity() {
+            localStorage.setItem('taskflow_activity_'+currentUser.id, JSON.stringify(activity));
+        }
+        function logActivity(type, message) {
+            const item = { id: genId(), type, message, at: new Date().toISOString() };
+            activity.unshift(item);
+            activity = activity.slice(0, 50);
+            saveActivity();
+            renderActivity();
+        }
+        function clearActivity() {
+            if (!confirm('Clear recent activity?')) return;
+            activity = [];
+            saveActivity();
+            renderActivity();
+        }
+        function renderActivity() {
+            const feed = document.getElementById('activityFeed');
+            if (!feed) return;
+            if (!activity.length) {
+                feed.innerHTML = '<div style="color:#718096;">No recent activity yet.</div>';
+                return;
+            }
+            feed.innerHTML = activity.slice(0, 10).map(a => `
+                <div class="activity-item">
+                    <div>${escapeHtml(a.message)}</div>
+                    <div class="activity-time">${formatDate(a.at)}</div>
+                </div>
+            `).join('');
+        }
+
+        // Group Functions
+        function createGroup(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('groupName').value;
+            const description = document.getElementById('groupDescription').value;
+
+            const newGroup = {
+                id: genId(),
+                userId: currentUser.id,
+                name,
+                description,
+                members: [],
+                createdAt: new Date().toISOString()
+            };
+
+            groups.push(newGroup);
+            saveGroups();
+            renderGroups();
+            updateDashboard();
+            closeModal('groupModal');
+            showNotification('Group created successfully!');
+            logActivity('group:create', `Created group: ${name}`);
+            
+            // Reset form
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupDescription').value = '';
+        }
+
+        function selectGroup(groupId) {
+            currentGroupId = groupId;
+            document.querySelectorAll('.group-card').forEach(card => card.classList.remove('active'));
+            document.querySelector(`[data-group-id="${groupId}"]`).classList.add('active');
+            
+            showGroupView();
+        }
+
+        function showGroupView() {
+            const group = groups.find(g => g.id === currentGroupId);
+            if (!group) return;
+
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('groupView').style.display = 'block';
+            
+            document.getElementById('currentGroupName').textContent = group.name;
+            document.getElementById('currentGroupDescription').textContent = group.description || 'No description';
+            
+            renderMembers();
+        }
+
+        function showDashboard() {
+            currentGroupId = null;
+            document.querySelectorAll('.group-card').forEach(card => card.classList.remove('active'));
+            document.getElementById('dashboardView').style.display = 'block';
+            document.getElementById('groupView').style.display = 'none';
+        }
+
+        function updateGroup(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('editGroupName').value;
+            const description = document.getElementById('editGroupDescription').value;
+
+            const groupIndex = groups.findIndex(g => g.id === currentGroupId);
+            if (groupIndex !== -1) {
+                groups[groupIndex].name = name;
+                groups[groupIndex].description = description;
+                saveGroups();
+                renderGroups();
+                showGroupView();
+                closeModal('editGroupModal');
+                showNotification('Group updated successfully!');
+                logActivity('group:update', `Updated group: ${name}`);
+            }
+        }
+
+        function deleteGroup() {
+            if (confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+                groups = groups.filter(g => g.id !== currentGroupId);
+                saveGroups();
+                renderGroups();
+                updateDashboard();
+                closeModal('editGroupModal');
+                showDashboard();
+                showNotification('Group deleted successfully!');
+                logActivity('group:delete', 'Deleted a group');
+            }
+        }
+
+        // Member Functions
+        function addMember(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('memberName').value;
+            const role = document.getElementById('memberRole').value;
+            const email = document.getElementById('memberEmail').value;
+
+            const newMember = {
+                id: genId(),
+                name,
+                role,
+                email,
+                tasks: [],
+                createdAt: new Date().toISOString()
+            };
+
+            const groupIndex = groups.findIndex(g => g.id === currentGroupId);
+            if (groupIndex !== -1) {
+                groups[groupIndex].members.push(newMember);
+                saveGroups();
+                renderMembers();
+                renderGroups();
+                updateDashboard();
+                closeModal('memberModal');
+                showNotification('Member added successfully!');
+                logActivity('member:add', `Added member: ${name}`);
+                // Reset form
+                document.getElementById('memberName').value = '';
+                document.getElementById('memberRole').value = '';
+                document.getElementById('memberEmail').value = '';
+            }
+        }
+
+        function removeMember(memberId) {
+            if (!confirm('Remove this member and all their tasks?')) return;
+            const groupIndex = groups.findIndex(g => g.id === currentGroupId);
+            if (groupIndex === -1) return;
+            const group = groups[groupIndex];
+            group.members = group.members.filter(m => m.id !== memberId);
+            saveGroups();
+            renderMembers();
+            renderGroups();
+            updateDashboard();
+            showNotification('Member removed');
+            logActivity('member:remove', 'Removed a member');
+        }
+
+        // Task Functions
+        function openTaskModal(memberId) {
+            currentTaskMemberId = memberId;
+            currentTaskEditId = null;
+            document.getElementById('taskModalTitle').textContent = 'Add New Task';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskPriority').value = 'medium';
+            document.getElementById('taskDueDate').value = '';
+            openModal('taskModal');
+        }
+
+        function editTask(memberId, taskId) {
+            currentTaskMemberId = memberId;
+            currentTaskEditId = taskId;
+            const gIdx = groups.findIndex(g => g.id === currentGroupId);
+            if (gIdx === -1) return;
+            const mIdx = groups[gIdx].members.findIndex(m => m.id === memberId);
+            if (mIdx === -1) return;
+            const task = groups[gIdx].members[mIdx].tasks.find(t => t.id === taskId);
+            if (!task) return;
+            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+            document.getElementById('taskTitle').value = task.title || '';
+            document.getElementById('taskDescription').value = task.description || '';
+            document.getElementById('taskPriority').value = task.priority || 'medium';
+            document.getElementById('taskDueDate').value = task.dueDate || '';
+            openModal('taskModal');
+        }
+
+        function addTask(event) {
+            event.preventDefault();
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const priority = document.getElementById('taskPriority').value;
+            const due = document.getElementById('taskDueDate').value;
+
+            if (!currentTaskMemberId) {
+                showNotification('No member selected for this task', 'error');
+                return;
+            }
+
+            const groupIndex = groups.findIndex(g => g.id === currentGroupId);
+            if (groupIndex === -1) return;
+            const memberIndex = groups[groupIndex].members.findIndex(m => m.id === currentTaskMemberId);
+            if (memberIndex === -1) return;
+
+            if (currentTaskEditId) {
+                const tIdx = groups[groupIndex].members[memberIndex].tasks.findIndex(t => t.id === currentTaskEditId);
+                if (tIdx !== -1) {
+                    const t = groups[groupIndex].members[memberIndex].tasks[tIdx];
+                    t.title = title; t.description = description; t.priority = priority; t.dueDate = due || null;
+                }
+            } else {
+                const newTask = {
+                    id: genId(),
+                    title,
+                    description,
+                    priority,
+                    dueDate: due || null,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                groups[groupIndex].members[memberIndex].tasks.push(newTask);
+            }
+            saveGroups();
+            renderMembers();
+            renderGroups();
+            updateDashboard();
+            closeModal('taskModal');
+            showNotification(currentTaskEditId ? 'Task updated!' : 'Task added successfully!');
+            logActivity('task:' + (currentTaskEditId ? 'update' : 'create'), `${currentTaskEditId ? 'Updated' : 'Added'} task: ${title}`);
+
+            // Reset form
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskPriority').value = 'medium';
+            document.getElementById('taskDueDate').value = '';
+            currentTaskMemberId = null;
+            currentTaskEditId = null;
+        }
+
+        function toggleTask(memberId, taskId) {
+            const gIdx = groups.findIndex(g => g.id === currentGroupId);
+            if (gIdx === -1) return;
+            const mIdx = groups[gIdx].members.findIndex(m => m.id === memberId);
+            if (mIdx === -1) return;
+            const tIdx = groups[gIdx].members[mIdx].tasks.findIndex(t => t.id === taskId);
+            if (tIdx === -1) return;
+            const task = groups[gIdx].members[mIdx].tasks[tIdx];
+            task.completed = !task.completed;
+            saveGroups();
+            renderMembers();
+            renderGroups();
+            updateDashboard();
+        }
+
+        function deleteTask(memberId, taskId) {
+            if (!confirm('Delete this task?')) return;
+            const gIdx = groups.findIndex(g => g.id === currentGroupId);
+            if (gIdx === -1) return;
+            const mIdx = groups[gIdx].members.findIndex(m => m.id === memberId);
+            if (mIdx === -1) return;
+            groups[gIdx].members[mIdx].tasks = groups[gIdx].members[mIdx].tasks.filter(t => t.id !== taskId);
+            saveGroups();
+            renderMembers();
+            renderGroups();
+            updateDashboard();
+            showNotification('Task deleted');
+            logActivity('task:delete', 'Deleted a task');
+        }
+
+        // Rendering
+        function renderGroups() {
+            const list = document.getElementById('groupsList');
+            if (!list) return;
+            list.innerHTML = '';
+            if (!groups.length) {
+                return; // dashboard shows empty state
+            }
+            groups
+                .sort((a,b) => b.createdAt.localeCompare(a.createdAt))
+                .forEach(group => {
+                    const totalTasks = group.members.reduce((sum, m) => sum + m.tasks.length, 0);
+                    const completed = group.members.reduce((sum, m) => sum + m.tasks.filter(t => t.completed).length, 0);
+                    const card = document.createElement('div');
+                    card.className = 'group-card' + (group.id === currentGroupId ? ' active' : '');
+                    card.dataset.groupId = group.id;
+                    card.innerHTML = `
+                        <div class="group-header">
+                            <div class="group-title">${escapeHtml(group.name)}</div>
+                            <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); openModal('editGroupModal'); document.getElementById('editGroupName').value='${escapeAttr(group.name)}'; document.getElementById('editGroupDescription').value='${escapeAttr(group.description||'')}'">Edit</button>
+                        </div>
+                        <div class="group-stats">
+                            <span>👥 ${group.members.length} members</span>
+                            <span>📝 ${totalTasks} tasks</span>
+                            <span>✅ ${completed} done</span>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => selectGroup(group.id));
+                    list.appendChild(card);
+                });
+        }
+
+        // Filters
+        let filterState = { text: '', status: 'all', priority: 'all', sort: 'created_desc' };
+
+        function applyTaskFilters(tasks) {
+            let list = tasks.slice();
+            if (filterState.text) {
+                const q = filterState.text.toLowerCase();
+                list = list.filter(t => (t.title||'').toLowerCase().includes(q) || (t.description||'').toLowerCase().includes(q));
+            }
+            if (filterState.status !== 'all') {
+                if (filterState.status === 'open') list = list.filter(t => !t.completed);
+                if (filterState.status === 'completed') list = list.filter(t => t.completed);
+                if (filterState.status === 'overdue') list = list.filter(t => isOverdue(t));
+            }
+            if (filterState.priority !== 'all') list = list.filter(t => t.priority === filterState.priority);
+            // Sort
+            if (filterState.sort === 'due_asc') {
+                list.sort((a,b) => (a.dueDate||'') > (b.dueDate||'') ? 1 : -1);
+            } else if (filterState.sort === 'priority_desc') {
+                const rank = { high: 3, medium: 2, low: 1 };
+                list.sort((a,b) => (rank[b.priority]||0) - (rank[a.priority]||0));
+            } else {
+                list.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+            }
+            return list;
+        }
+
+        function isOverdue(task) {
+            if (!task || !task.dueDate || task.completed) return false;
+            try { return new Date(task.dueDate).getTime() < Date.now(); } catch { return false; }
+        }
+
+        function renderMembers() {
+            const grid = document.getElementById('membersGrid');
+            if (!grid) return;
+            const group = groups.find(g => g.id === currentGroupId);
+            if (!group) { grid.innerHTML = ''; return; }
+
+            grid.innerHTML = '';
+            group.members
+                .sort((a,b) => b.createdAt.localeCompare(a.createdAt))
+                .forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = 'member-card';
+                    const completed = member.tasks.filter(t => t.completed).length;
+                    const initials = (member.name||'').trim().split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('');
+                    const color = avatarColor(member.name||'');
+                    card.innerHTML = `
+                        <div class="member-header">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="member-avatar" style="background:${color}">${initials||'?'}</div>
+                                <div class="member-name">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-small" onclick="openTaskModal(${member.id});">➕ Task</button>
+                                <button class="btn btn-small btn-danger" onclick="removeMember(${member.id});">🗑️ Remove</button>
+                            </div>
+                        </div>
+                        <div class="task-list">
+                            ${applyTaskFilters(member.tasks).map(task => `
+                                <div class="task-item ${task.completed ? 'completed' : ''} ${task.priority ? task.priority+'-priority':''} ${isOverdue(task) ? 'overdue' : ''}">
+                                    <div class="task-content">
+                                        <div class="task-title">${escapeHtml(task.title)}</div>
+                                        <div class="task-meta">
+                                            ${task.priority ? 'Priority: ' + escapeHtml(task.priority) : ''}
+                                            ${task.dueDate ? ' • Due: ' + formatDate(task.dueDate) : ''}
+                                        </div>
+                                    </div>
+                                    <div class="task-actions">
+                                        <button class="btn btn-small" onclick="editTask(${member.id}, ${task.id})">✏️ Edit</button>
+                                        <button class="btn btn-small btn-secondary" onclick="toggleTask(${member.id}, ${task.id})">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
+                                        <button class="btn btn-small btn-danger" onclick="deleteTask(${member.id}, ${task.id})">🗑️</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+        }
+
+        function updateDashboard() {
+            const totalGroupsEl = document.getElementById('totalGroups');
+            const totalMembersEl = document.getElementById('totalMembers');
+            const totalTasksEl = document.getElementById('totalTasks');
+            const completedTasksEl = document.getElementById('completedTasks');
+            const overdueEl = document.getElementById('overdueTasks');
+            if (!totalGroupsEl) return;
+            const groupsCount = groups.length;
+            const membersCount = groups.reduce((sum, g) => sum + g.members.length, 0);
+            const tasksCount = groups.reduce((sum, g) => sum + g.members.reduce((s, m) => s + m.tasks.length, 0), 0);
+            const completedCount = groups.reduce((sum, g) => sum + g.members.reduce((s, m) => s + m.tasks.filter(t => t.completed).length, 0), 0);
+            const overdueCount = groups.reduce((sum, g) => sum + g.members.reduce((s, m) => s + m.tasks.filter(t => isOverdue(t)).length, 0), 0);
+            totalGroupsEl.textContent = groupsCount;
+            totalMembersEl.textContent = membersCount;
+            totalTasksEl.textContent = tasksCount;
+            completedTasksEl.textContent = completedCount;
+            if (overdueEl) overdueEl.textContent = overdueCount;
+        }
+
+        // UI Helpers
+        let lastFocusEl = null;
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            lastFocusEl = document.activeElement;
+            modal.classList.add('active');
+            const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusables.length) focusables[0].focus();
+            const onKey = (e) => {
+                if (e.key === 'Escape') { e.preventDefault(); closeModal(id); }
+                if (e.key === 'Tab' && focusables.length) {
+                    const first = focusables[0];
+                    const last = focusables[focusables.length-1];
+                    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            };
+            modal.dataset.keyHandler = '1';
+            modal.addEventListener('keydown', onKey);
+            modal._onKey = onKey;
+            // Close when clicking backdrop
+            const onClick = (e) => { if (e.target === modal) closeModal(id); };
+            modal.addEventListener('mousedown', onClick);
+            modal._onClick = onClick;
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('active');
+            if (modal._onKey) modal.removeEventListener('keydown', modal._onKey);
+            if (modal._onClick) modal.removeEventListener('mousedown', modal._onClick);
+            if (lastFocusEl) lastFocusEl.focus();
+        }
+        function showNotification(message, type) {
+            const el = document.getElementById('notification');
+            el.textContent = message;
+            el.className = 'notification' + (type === 'error' ? ' error' : '');
+            requestAnimationFrame(() => el.classList.add('show'));
+            setTimeout(() => el.classList.remove('show'), 2000);
+        }
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+        }
+        function escapeAttr(str) {
+            return escapeHtml(str).replace(/\n/g, ' ');
+        }
+        function formatDate(val) {
+            try { return new Date(val).toLocaleString(); } catch { return val; }
+        }
+        function genId() {
+            try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch {}
+            return String(Date.now()) + String(Math.floor(Math.random()*1e6));
+        }
+        function avatarColor(name) {
+            let hash = 0; const str = String(name);
+            for (let i=0; i<str.length; i++) hash = ((hash<<5)-hash) + str.charCodeAt(i) | 0;
+            const h = Math.abs(hash) % 360; const s = 65; const l = 50;
+            return `hsl(${h} ${s}% ${l}%)`;
+        }
+
+        // Export/Import
+        function exportData() {
+            if (!currentUser) return;
+            const data = { user: currentUser, groups };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'taskflow-data.json';
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        }
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const data = JSON.parse(reader.result);
+                    if (!data || !Array.isArray(data.groups)) throw new Error('Invalid data');
+                    // Keep current user; only import groups for this user
+                    groups = data.groups.filter(g => g.userId === currentUser.id);
+                    saveGroups();
+                    renderGroups();
+                    updateDashboard();
+                    if (currentGroupId) showGroupView();
+                    showNotification('Import successful');
+                } catch (e) {
+                    showNotification('Import failed: invalid file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearCompleted() {
+            const gIdx = groups.findIndex(g => g.id === currentGroupId);
+            if (gIdx === -1) return;
+            groups[gIdx].members.forEach(m => {
+                m.tasks = m.tasks.filter(t => !t.completed);
+            });
+            saveGroups();
+            renderMembers();
+            renderGroups();
+            updateDashboard();
+        }
+
+        // Initial load and bindings
+        function init() {
+            loadUserData();
+            if (currentUser) {
+                showMainApp();
+            }
+            // Filters
+            const qs = (id) => document.getElementById(id);
+            const search = qs('taskSearch');
+            const fStatus = qs('taskFilterStatus');
+            const fPrio = qs('taskFilterPriority');
+            const fSort = qs('taskSort');
+            const clearBtn = qs('clearCompletedBtn');
+            if (search) search.addEventListener('input', (e) => { filterState.text = e.target.value; renderMembers(); });
+            if (fStatus) fStatus.addEventListener('change', (e) => { filterState.status = e.target.value; renderMembers(); });
+            if (fPrio) fPrio.addEventListener('change', (e) => { filterState.priority = e.target.value; renderMembers(); });
+            if (fSort) fSort.addEventListener('change', (e) => { filterState.sort = e.target.value; renderMembers(); });
+            if (clearBtn) clearBtn.addEventListener('click', clearCompleted);
+            // Export/Import
+            const exportBtn = qs('exportBtn');
+            const importInput = qs('importInput');
+            if (exportBtn) exportBtn.addEventListener('click', exportData);
+            if (importInput) importInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) importData(e.target.files[0]);
+                e.target.value = '';
+            });
+            // Service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(()=>{});
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+    </body>
+    </html>
