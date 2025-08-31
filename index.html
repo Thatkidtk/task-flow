@@ -1242,8 +1242,7 @@
                 .forEach(member => {
                     const card = document.createElement('div');
                     card.className = 'member-card';
-                    // Make the entire member card open the member view
-                    card.setAttribute('data-action', 'open-member');
+                    // Store the member id on the card for later click delegation
                     card.setAttribute('data-member-id', member.id);
                     const completed = member.tasks.filter(t => t.completed).length;
                     const initials = (member.name||'').trim().split(/\s+/).slice(0,2).map(s=>s[0]?.toUpperCase()||'').join('');
@@ -1252,7 +1251,7 @@
                         <div class="member-header">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div class="member-avatar" style="background:${color}">${initials||'?'}</div>
-                                <div class="member-name" data-action="open-member" data-member-id="${escapeAttr(member.id)}">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
+                                <div class="member-name" role="button" tabindex="0" data-action="open-member" data-member-id="${escapeAttr(member.id)}">${escapeHtml(member.name)} <span style="color:#718096; font-weight:400;">${member.role ? '• ' + escapeHtml(member.role) : ''}</span></div>
                             </div>
                         </div>
                         <div class="task-list">
@@ -1282,6 +1281,13 @@
                             e.preventDefault();
                             if (typeof openMemberView === 'function') openMemberView(member.id);
                             if (typeof openTaskModal === 'function') openTaskModal(member.id);
+                        });
+                        nameEl.addEventListener('keydown', function(e){
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (typeof openMemberView === 'function') openMemberView(member.id);
+                                if (typeof openTaskModal === 'function') openTaskModal(member.id);
+                            }
                         });
                     }
                     grid.appendChild(card);

@@ -71,6 +71,25 @@
         if (window.console && console.error) console.error('Action failed', action, err);
       }
     }, true);
+
+    // Also allow clicking anywhere on a member card (except task action buttons)
+    grid.addEventListener('click', function(e){
+      var card = e.target && e.target.closest('.member-card');
+      if (!card || !grid.contains(card)) return;
+      // ignore clicks on task action buttons inside the card
+      if (e.target.closest('.task-actions') || e.target.closest('button')) return;
+      var mid = (e.target.closest('.member-name') && e.target.closest('.member-name').dataset.memberId) || card.getAttribute('data-member-id');
+      if (!mid) return;
+      e.preventDefault();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      e.stopPropagation();
+      try {
+        if (typeof window.openMemberView === 'function') window.openMemberView(mid);
+        if (typeof window.openTaskModal === 'function') window.openTaskModal(mid);
+      } catch (err) {
+        if (window.console && console.error) console.error('Open member failed', err);
+      }
+    }, false);
   }
 
   function ensureInit(){
