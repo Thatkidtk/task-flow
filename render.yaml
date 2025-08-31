@@ -1,7 +1,10 @@
 services:
   - type: web
     name: task-flow
-    env: static
-    staticPublishPath: .
-    buildCommand: ""
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
     pullRequestPreviewsEnabled: false
