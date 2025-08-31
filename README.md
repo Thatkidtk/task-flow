@@ -32,6 +32,22 @@ A lightweight, installable task manager for teams and families. 100% client‑si
 3) Your site will be available at:
    - https://Thatkidtk.github.io/task-flow/
 
+## Deploy (Render)
+Render supports zero-config static sites. This repo includes a `render.yaml` blueprint.
+
+Option A — From Dashboard
+- Create New → Static Site → Connect repo
+- Build Command: leave empty
+- Publish Directory: `.`
+- After deploy, your site is live at the Render URL.
+
+Option B — Use render.yaml (Blueprint)
+- Create New → Blueprint → Select repo
+- Render will detect `render.yaml` with:
+  - `env: static`
+  - `staticPublishPath: .`
+- Click Apply; Render provisions and deploys automatically on pushes to the default branch.
+
 ## Development Notes
 - Single‑file app kept simple on purpose; no build step required.
 - For a larger setup, split CSS/JS and add a bundler (e.g., Vite) and tests (Playwright/Cypress).

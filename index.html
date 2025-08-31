@@ -7,6 +7,16 @@
     <meta name="theme-color" content="#4facfe">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <meta name="description" content="TaskFlow helps teams and families organize tasks, groups, and schedules — all stored locally on your device.">
+    <meta name="robots" content="index,follow">
+    <meta property="og:title" content="TaskFlow — Team & Family Task Manager">
+    <meta property="og:description" content="Organize groups, assign tasks, and track progress. Data stays on your device.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="icon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="TaskFlow — Team & Family Task Manager">
+    <meta name="twitter:description" content="Organize groups, assign tasks, and track progress. Data stays on your device.">
+    <meta name="twitter:image" content="icon.svg">
     <style>
         /* additions */
         .filter-input { padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
@@ -16,6 +26,7 @@
         .activity-item { display:flex; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #edf2f7; }
         .activity-item:last-child { border-bottom:none; }
         .activity-time { color:#718096; font-size:12px; white-space:nowrap; }
+        .site-footer { max-width:1400px; margin:20px auto; padding:12px 16px; color:#4a5568; font-size:12px; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; }
     </style>
     <style>
         * {
@@ -718,6 +729,11 @@
 
     <!-- Notification -->
     <div id="notification" class="notification" role="status" aria-live="polite"></div>
+
+    <!-- Privacy & Data Note -->
+    <footer class="site-footer" aria-label="Privacy and data notice">
+        <p><strong>Privacy & Data:</strong> TaskFlow stores your data locally in your browser (localStorage). No servers or analytics used. You can export or clear your data at any time.</p>
+    </footer>
 
     <script>
         // Application State
